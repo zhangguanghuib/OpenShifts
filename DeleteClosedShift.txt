@@ -1,0 +1,23 @@
+﻿USE [AxDB]
+GO
+
+CREATE PROCEDURE [ext].[DeleteClosedShift]
+	@CHANNEL [bigint],
+    @TERMINALID [nvarchar](10),
+    @SHIFTID [bigint]
+AS
+BEGIN
+
+   IF EXISTS (SELECT * FROM [ext].[RETAILSHIFTUNCLOSEDTABLE]
+		where CHANNEL    = @CHANNEL      and
+				TERMINALID = @TERMINALID   and
+				SHIFTID    = @SHIFTID 
+   )
+   BEGIN
+	   DELETE FROM [ext].[RETAILSHIFTUNCLOSEDTABLE]
+	   where CHANNEL    = @CHANNEL      and
+			 TERMINALID = @TERMINALID   and
+			 SHIFTID    = @SHIFTID 
+   END
+END
+GO

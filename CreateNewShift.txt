@@ -1,0 +1,55 @@
+﻿USE [AxDB]
+GO
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [ext].[CreateNewShift]
+	@CHANNEL [bigint],
+    @TERMINALID [nvarchar](10),
+    @STOREID [nvarchar](10),
+    @SHIFTID [bigint],
+    @STAFFID [nvarchar](25),
+    @CURRENTSTAFFID [nvarchar](25),
+    @STATUS [int],
+    @CURRENTTERMINALID [nvarchar](10),
+    @ISSHARED [bit],
+    @STARTDATETIMEUTC [datetime],
+    @STATUSDATETIMEUTC [datetime],
+    @DATAAREAID [nvarchar](4),
+    @CASHDRAWER [nvarchar](512)
+AS
+BEGIN
+
+    INSERT INTO [ext].[RETAILSHIFTUNCLOSEDTABLE]
+        ([CHANNEL]
+        ,[TERMINALID]
+        ,[STOREID]
+        ,[SHIFTID]
+        ,[STAFFID]
+        ,[CURRENTSTAFFID]
+        ,[STATUS]
+        ,[CURRENTTERMINALID]
+        ,[ISSHARED]
+        ,[STARTDATETIMEUTC]
+        ,[STATUSDATETIMEUTC]
+        ,[DATAAREAID]
+        ,[CASHDRAWER])
+    VALUES
+        (@CHANNEL,
+        @TERMINALID,
+		@STOREID,
+		@SHIFTID,
+		@STAFFID,
+		@CURRENTSTAFFID ,
+		@STATUS,
+		@CURRENTTERMINALID ,
+		@ISSHARED,
+		@STARTDATETIMEUTC,
+		@STATUSDATETIMEUTC,
+		@DATAAREAID,
+		@CASHDRAWER)
+END
+GO

@@ -1,0 +1,41 @@
+﻿USE [AxDB]
+GO
+
+/****** Object:  StoredProcedure [ext].[ChangeShiftStaus]    Script Date: 4/8/2020 10:51:29 PM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+
+CREATE PROCEDURE [ext].[ChangeShiftStaus]
+	@CHANNEL [bigint],
+    @TERMINALID [nvarchar](10),
+    @SHIFTID [bigint],
+	@STATUS  [int],
+	@STATUSDATETIMEUTC [datetime],
+	@CURRENTSTAFFID [nvarchar](25),
+	@CURRENTTERMINALID [nvarchar](10),
+	@tvp_QueryResultSettings [crt].[QUERYRESULTSETTINGSTABLETYPE] READONLY 
+AS
+BEGIN
+
+   IF EXISTS (SELECT * FROM [ext].[RETAILSHIFTUNCLOSEDTABLE]
+		WHERE CHANNEL    = @CHANNEL      and
+			  TERMINALID = @TERMINALID   and
+			  SHIFTID    = @SHIFTID 
+   )
+   BEGIN
+	   UPDATE [ext].[RETAILSHIFTUNCLOSEDTABLE]
+	   SET 
+		   [STATUS] = @STATUS,
+		   [CURRENTTERMINALID] = @CURRENTTERMINALID,
+		   [STATUSDATETIMEUTC] = @STATUSDATETIMEUTC,
+		   [CURRENTSTAFFID] = @CURRENTSTAFFID
+	   WHERE CHANNEL    = @CHANNEL      and
+			 TERMINALID = @TERMINALID   and
+			 SHIFTID    = @SHIFTID 
+   END
+END
+GO
