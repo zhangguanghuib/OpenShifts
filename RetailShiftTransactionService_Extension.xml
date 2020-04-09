@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>RetailShiftTransactionService_Extension</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+[ExtensionOf(classStr(RetailTransactionServiceEx))]
+final class RetailShiftTransactionService_Extension
+{
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>CreateNewShift</Name>
+				<Source><![CDATA[
+    public static container CreateNewShift(
+        RefRecId             _channel,
+        RetailTerminalId     _terminalId,
+        RetailStoreId        _storeId,
+        RetailPosBatchID     _shiftId,
+        RetailStaffId        _staffId,
+        RetailStaffId        _currentStaffId,
+        int                   _status,
+        RetailTerminalId     _currentTerminalId,
+        NoYes                _isShared,
+        Name                 _cashDrawer,
+        DataAreaId           _dataAreaId = curExt()   
+        )
+    {
+        boolean success = true;
+        str error = '';
+        RetailShiftUnclosedTable  retailShiftUnclosedTable;
+
+        select firstonly retailShiftUnclosedTable
+            where retailShiftUnclosedTable.Channel == _channel &&
+                  retailShiftUnclosedTable.TerminalId == _terminalId &&
+                  retailShiftUnclosedTable.ShiftID == _shiftId;
+
+        if (!retailShiftUnclosedTable.RecId)
+        {
+            ttsbegin;
+            ShiftStatus _shiftStatus = any2Enum(_status);
+            retailShiftUnclosedTable.Channel = _channel;
+            retailShiftUnclosedTable.TerminalId = _terminalId;
+            retailShiftUnclosedTable.StoreId = _storeId;
+            retailShiftUnclosedTable.ShiftID = _shiftId;
+            retailShiftUnclosedTable.StaffId = _staffId;
+            retailShiftUnclosedTable.CurrentStaffId = _currentStaffId;
+            retailShiftUnclosedTable.Status = _shiftStatus;
+            retailShiftUnclosedTable.CurrentTerminalId = _currentTerminalId;
+            retailShiftUnclosedTable.IsShared = _isShared;
+            retailShiftUnclosedTable.StartDateTimeUTC = DateTimeUtil::getSystemDateTime();;
+            retailShiftUnclosedTable.StatusDateTimeUTC = DateTimeUtil::getSystemDateTime();;
+            retailShiftUnclosedTable.CashDrawer = _cashDrawer;
+            retailShiftUnclosedTable.insert();
+            ttscommit;
+        }
+
+        return [success, error, RetailShiftUnclosedTable.RecId];
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>RemoveOpenedShift</Name>
+				<Source><![CDATA[
+    public static container RemoveOpenedShift(
+        RefRecId             _channel,
+        RetailTerminalId     _terminalId,
+        RetailPosBatchID     _shiftId)
+    {
+        boolean success = true;
+        str error = "";
+        RetailShiftUnclosedTable  retailShiftUnclosedTable;
+
+        select forupdate retailShiftUnclosedTable
+            where retailShiftUnclosedTable.Channel    == _channel &&
+                  retailShiftUnclosedTable.TerminalId == _terminalId &&
+                  retailShiftUnclosedTable.ShiftID    == _shiftId;
+
+        if (retailShiftUnclosedTable.RecId)
+        {
+            ttsbegin;
+            retailShiftUnclosedTable.delete();
+            ttscommit;
+        }
+
+        return [success, error, RetailShiftUnclosedTable.RecId];
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>ChangeShiftStatus</Name>
+				<Source><![CDATA[
+    public static container ChangeShiftStatus(
+        RefRecId             _channel,
+        RetailTerminalId     _terminalId,
+        RetailPosBatchID     _shiftId,
+        int                   _status,
+        RetailTerminalId     _currentTerminalId,
+        RetailStaffId        _currentStaffId)
+    {
+        boolean success = true;
+        str error = '';
+        RetailShiftUnclosedTable  retailShiftUnclosedTable;
+        ShiftStatus               shiftStatus = any2Enum(_status);
+
+        select forupdate retailShiftUnclosedTable
+            where retailShiftUnclosedTable.Channel == _channel &&
+                  retailShiftUnclosedTable.TerminalId == _terminalId &&
+                  retailShiftUnclosedTable.ShiftID == _shiftId;
+
+        if (retailShiftUnclosedTable.RecId)
+        {   
+            ttsbegin;
+            retailShiftUnclosedTable.Status            = shiftStatus;
+            retailShiftUnclosedTable.StartDateTimeUTC  = DateTimeUtil::getSystemDateTime();
+            retailShiftUnclosedTable.CurrentTerminalId = _currentTerminalId;
+            retailShiftUnclosedTable.CurrentStaffId    = _currentStaffId;
+            retailShiftUnclosedTable.update();
+            ttscommit;
+        }
+
+        return [success, error, RetailShiftUnclosedTable.RecId];
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>
